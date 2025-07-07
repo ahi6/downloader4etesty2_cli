@@ -7,3 +7,4 @@ edition = "2024"
 downloader4etesty2 = { path = "../downloader4etesty2" }
 inquire = "0.7.5"
 serde_json = "1.0.140"
+tokio = {version = "1.46.1", features = ["full"]}

@@ -4,10 +4,11 @@ use downloader4etesty2::types;
 use std::collections::HashMap;
 use std::path::Path;
 
-fn main() {
+#[tokio::main]
+async fn main() {
     let extractor = Extractor::new();
 
-    let topics = extractor.fetch_bulletin_topics().unwrap();
+    let topics = extractor.fetch_bulletin_topics().await.unwrap();
 
     let mut topic_map = HashMap::new();
 
@@ -48,10 +49,10 @@ fn main() {
         let topic_url = topic_map.get(&topic).unwrap();
         println!("Downloading {}", topic);
 
-        let questions = extractor.fetch_questions(topic_url).unwrap();
+        let questions = extractor.fetch_questions(topic_url).await.unwrap();
 
         if should_download_media {
-            download_media_to_file(&questions, &extractor, &output_path);
+            download_media_to_file(&questions, &extractor, &output_path).await;
         }
 
         let _ = serde_json::to_writer_pretty(topic_file, &questions).expect("Failed to write JSON");
@@ -60,15 +61,15 @@ fn main() {
     }
 }
 
-fn download_media_to_file(
+async fn download_media_to_file(
     questions: &Vec<types::Question>,
     extractor: &Extractor,
     output_path: &Path,
 ) {
     // generic closure to download media
-    let download_media = |url: &str| {
+    let download_media = |url: String| async move {
         println!("Downloading media: {}", url);
-        let media_path = output_path.join(Path::new(url).strip_prefix("/").unwrap());
+        let media_path = output_path.join(Path::new(&url).strip_prefix("/").unwrap());
 
         if media_path.exists() {
             println!("Media already exists, skipping");
@@ -76,7 +77,8 @@ fn download_media_to_file(
         }
 
         let media = extractor
-            .fetch_media_file(url)
+            .fetch_media_file(&url)
+            .await
             .expect("Failed to download media");
 
         // Create parent folder if it doesn't exist
@@ -91,22 +93,22 @@ fn download_media_to_file(
     for question in questions {
         // Question media
         if let Some(image_url) = &question.question_image {
-            download_media(image_url);
+            download_media(image_url.to_string()).await;
         }
         if let Some(video_url) = &question.question_video {
-            download_media(video_url);
+            download_media(video_url.to_string()).await;
         }
 
         // Answer media
         if let types::QuestionOptionType::Image(image_url) = &question.option_a.content {
-            download_media(image_url);
+            download_media(image_url.to_string()).await;
         }
         if let types::QuestionOptionType::Image(image_url) = &question.option_b.content {
-            download_media(image_url);
+            download_media(image_url.to_string()).await;
         }
         if let Some(option_c) = &question.option_c {
             if let types::QuestionOptionType::Image(image_url) = &option_c.content {
-                download_media(image_url);
+                download_media(image_url.to_string()).await;
             }
         }
     }
