@@ -13,6 +13,11 @@ Tento nástroj umožňuje stahovat testové otázky z oficiálního portálu ete
 - 🖼️ Volitelné stahování médií (obrázky, videa)
 - 📁 Konfigurovatelný výstupní adresář
 
+## Náhled
+
+<img width="1068" height="245" alt="App screenshot" src="https://github.com/user-attachments/assets/800135ae-64ea-47a3-a9f8-15202330c4c2" />
+
+
 ## Instalace
 
 ### Sestavení ze zdrojového kódu
